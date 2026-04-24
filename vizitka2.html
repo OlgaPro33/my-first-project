@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ольга Прокофьева</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --accent1: #c084fc;
+    --accent2: #f472b6;
+    --accent3: #818cf8;
+    --glow: rgba(192, 132, 252, 0.35);
+  }
+
+  html, body {
+    min-height: 100%;
+    background: #0a0a0a;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    color: #e2e8f0;
+    overflow-x: hidden;
+  }
+
+  /* ── particles canvas ── */
+  #bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  /* ── layout ── */
+  .card {
+    position: relative;
+    z-index: 1;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1.5rem;
+    gap: 2rem;
+  }
+
+  /* ── avatar ring ── */
+  .avatar-wrap {
+    position: relative;
+    width: 120px;
+    height: 120px;
+  }
+  .avatar-ring {
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg, var(--accent1), var(--accent2), var(--accent3), var(--accent1));
+    animation: spin 6s linear infinite;
+    filter: blur(1px);
+  }
+  .avatar-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: #1a1a2e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3.2rem;
+    z-index: 1;
+    overflow: hidden;
+  }
+  .avatar-inner img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    display: block;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── name ── */
+  .name {
+    font-size: clamp(2rem, 8vw, 3.4rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    text-align: center;
+    background: linear-gradient(135deg, #f8fafc 10%, var(--accent1) 45%, var(--accent2) 75%, #f8fafc 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer 4s linear infinite;
+    filter: drop-shadow(0 0 24px var(--glow));
+    line-height: 1.15;
+  }
+  @keyframes shimmer { to { background-position: 200% center; } }
+
+  /* ── divider ── */
+  .divider {
+    width: 80px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent1), var(--accent2), transparent);
+    border-radius: 1px;
+    animation: pulse-line 3s ease-in-out infinite;
+  }
+  @keyframes pulse-line {
+    0%, 100% { opacity: 0.5; width: 80px; }
+    50% { opacity: 1; width: 140px; }
+  }
+
+  /* ── specialization ── */
+  .spec-block {
+    max-width: 580px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+  .spec-title {
+    font-size: clamp(0.8rem, 2.5vw, 0.9rem);
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent1);
+    opacity: 0.85;
+  }
+  .spec-text {
+    font-size: clamp(0.95rem, 2.8vw, 1.1rem);
+    line-height: 1.75;
+    color: #cbd5e1;
+  }
+  .spec-text em {
+    font-style: normal;
+    background: linear-gradient(90deg, var(--accent1), var(--accent2), var(--accent3));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 800;
+    font-size: 1.08em;
+    display: inline-block;
+  }
+
+  /* ── glass card ── */
+  .glass {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px;
+    backdrop-filter: blur(12px);
+    padding: 1.75rem 2.25rem;
+    width: 100%;
+    max-width: 480px;
+  }
+
+  /* ── socials ── */
+  .socials {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    align-items: center;
+  }
+  .social-link {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    text-decoration: none;
+    color: #94a3b8;
+    font-size: 0.95rem;
+    font-weight: 500;
+    padding: 0.6rem 1.1rem;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.07);
+    background: rgba(255,255,255,0.03);
+    transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    position: relative;
+    overflow: hidden;
+  }
+  .social-link::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--hover-bg, transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+    border-radius: inherit;
+  }
+  .social-link:hover::before { opacity: 1; }
+  .social-link:hover {
+    transform: translateY(-4px) scale(1.04);
+    box-shadow: 0 8px 30px var(--hover-shadow, rgba(0,0,0,0.3));
+    color: #f1f5f9;
+    border-color: var(--hover-border, rgba(255,255,255,0.2));
+  }
+  .social-link svg {
+    flex-shrink: 0;
+    transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    position: relative;
+    z-index: 1;
+  }
+  .social-link:hover svg { transform: rotate(-8deg) scale(1.15); }
+  .social-label { position: relative; z-index: 1; }
+
+  .tg-link {
+    --hover-bg: linear-gradient(135deg,rgba(41,182,246,0.15),rgba(3,169,244,0.08));
+    --hover-shadow: rgba(41,182,246,0.25);
+    --hover-border: rgba(41,182,246,0.4);
+  }
+  .tg-link:hover { color: #7dd3fc; }
+  .tg-link svg { color: #38bdf8; }
+
+  .vk-link {
+    --hover-bg: linear-gradient(135deg,rgba(100,149,237,0.15),rgba(70,120,220,0.08));
+    --hover-shadow: rgba(100,149,237,0.25);
+    --hover-border: rgba(100,149,237,0.4);
+  }
+  .vk-link:hover { color: #93c5fd; }
+  .vk-link svg { color: #6495ed; }
+
+  /* ── CTA button ── */
+  .cta-wrap {
+    display: flex;
+    justify-content: center;
+  }
+  .cta {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    text-decoration: none;
+    padding: 0.9rem 2.2rem;
+    border-radius: 50px;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    color: #0a0a0a;
+    background: linear-gradient(135deg, var(--accent1), var(--accent2));
+    box-shadow: 0 0 0 0 var(--glow);
+    transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.3s;
+    animation: cta-breathe 3s ease-in-out infinite;
+    overflow: hidden;
+  }
+  .cta::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.25), transparent);
+    border-radius: inherit;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .cta:hover { transform: scale(1.06); box-shadow: 0 0 40px 8px var(--glow); animation: none; }
+  .cta:hover::after { opacity: 1; }
+  .cta:active { transform: scale(0.97); }
+  .cta svg { transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1); }
+  .cta:hover svg { transform: translateX(4px) rotate(-10deg); }
+
+  @keyframes cta-breathe {
+    0%, 100% { box-shadow: 0 0 14px 2px rgba(192,132,252,0.25); }
+    50%       { box-shadow: 0 0 34px 8px rgba(244,114,182,0.35); }
+  }
+
+  /* ── footer ── */
+  .footer-note {
+    font-size: 0.75rem;
+    color: #334155;
+    letter-spacing: 0.05em;
+    text-align: center;
+  }
+
+  /* ── entrance animations ── */
+  .fade-up {
+    opacity: 0;
+    transform: translateY(24px);
+    animation: fadeUp 0.7s ease forwards;
+  }
+  .fade-up:nth-child(1) { animation-delay: 0.1s; }
+  .fade-up:nth-child(2) { animation-delay: 0.25s; }
+  .fade-up:nth-child(3) { animation-delay: 0.35s; }
+  .fade-up:nth-child(4) { animation-delay: 0.45s; }
+  .fade-up:nth-child(5) { animation-delay: 0.55s; }
+  .fade-up:nth-child(6) { animation-delay: 0.65s; }
+  .fade-up:nth-child(7) { animation-delay: 0.75s; }
+
+  @keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── responsive ── */
+  @media (max-width: 480px) {
+    .socials { flex-direction: column; gap: 0.9rem; }
+    .social-link { width: 100%; justify-content: center; }
+    .glass { padding: 1.4rem 1.2rem; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="bg"></canvas>
+
+<div class="card">
+  <div class="avatar-wrap fade-up">
+    <div class="avatar-ring"></div>
+    <div class="avatar-inner"><img src="1-6.png" alt="Ольга Прокофьева"></div>
+  </div>
+
+  <h1 class="name fade-up">Ольга Прокофьева</h1>
+
+  <div class="divider fade-up"></div>
+
+  <div class="spec-block fade-up">
+    <p class="spec-title">Наставник · Коуч · Психолог</p>
+    <p class="spec-text">
+      Наставник для женщин-экспертов и предпринимателей, стратегический коуч,
+      интегративный психолог, автор трансформационных игр и продуктов.<br><br>
+      Раскрываю внутренний потенциал, активирую мышление и создаю путь к изобилию,
+      в котором не нужно выбирать:<br>
+      <em>ты можешь быть собой, быть счастливой и быть успешной</em>
+    </p>
+  </div>
+
+  <div class="glass fade-up">
+    <div class="socials">
+      <a class="social-link tg-link" href="https://t.me/OlgaProkofeva_psy" target="_blank" rel="noopener">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.289c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.548 14.29l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.6.269z"/>
+        </svg>
+        <span class="social-label">Telegram</span>
+      </a>
+
+      <a class="social-link vk-link" href="https://vk.com/olgaprokofeva_psy" target="_blank" rel="noopener">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12.785 16.241s.288-.032.436-.194c.136-.148.132-.427.132-.427s-.02-1.304.585-1.496c.598-.19 1.365 1.26 2.182 1.816.616.416 1.083.325 1.083.325l2.172-.03s1.137-.071.598-1.131c-.044-.085-.313-.661-1.613-1.868-1.36-1.26-1.178-1.057.46-3.238.998-1.329 1.397-2.141 1.272-2.488-.12-.332-.85-.244-.85-.244l-2.444.015s-.181-.025-.315.056c-.132.08-.217.267-.217.267s-.388 1.032-.905 1.91c-1.088 1.85-1.524 1.948-1.702 1.832-.414-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.726-.266-.064-.46-.107-1.137-.114-.87-.009-1.605.003-2.02.207-.278.135-.492.437-.361.454.161.021.527.099.72.364.249.341.24 1.107.24 1.107s.143 2.11-.333 2.372c-.326.176-.774-.183-1.733-1.823-.491-.852-.862-1.795-.862-1.795s-.071-.181-.202-.278a.983.983 0 0 0-.365-.131l-2.321.015s-.348.01-.476.161C4.97 8.435 5.09 8.75 5.09 8.75s1.822 4.261 3.881 6.406c1.89 1.97 4.038 1.84 4.038 1.84h.776v-.755z"/>
+        </svg>
+        <span class="social-label">ВКонтакте</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="cta-wrap fade-up">
+    <a class="cta" href="https://t.me/OlgaProkofeva_psy" target="_blank" rel="noopener">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zm-2 10H6v-2h12v2zm0-4H6V6h12v2z"/>
+      </svg>
+      Написать мне
+    </a>
+  </div>
+
+  <p class="footer-note fade-up">© 2026 Ольга Прокофьева</p>
+</div>
+
+<script>
+(function () {
+  const canvas = document.getElementById('bg');
+  const ctx = canvas.getContext('2d');
+  let W, H, dots;
+
+  const COLORS = ['#c084fc', '#f472b6', '#818cf8', '#e879f9'];
+
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+    init();
+  }
+
+  function rand(min, max) { return Math.random() * (max - min) + min; }
+
+  function init() {
+    const count = Math.floor((W * H) / 14000);
+    dots = Array.from({ length: count }, () => ({
+      x: rand(0, W), y: rand(0, H),
+      r: rand(0.6, 2.2),
+      vx: rand(-0.18, 0.18), vy: rand(-0.18, 0.18),
+      color: COLORS[Math.floor(Math.random() * COLORS.length)],
+      alpha: rand(0.15, 0.55),
+    }));
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    for (const d of dots) {
+      ctx.beginPath();
+      ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+      ctx.fillStyle = d.color;
+      ctx.globalAlpha = d.alpha;
+      ctx.fill();
+      d.x += d.vx; d.y += d.vy;
+      if (d.x < 0) d.x = W;
+      if (d.x > W) d.x = 0;
+      if (d.y < 0) d.y = H;
+      if (d.y > H) d.y = 0;
+    }
+    ctx.globalAlpha = 1;
+
+    // draw soft connection lines
+    ctx.lineWidth = 0.4;
+    for (let i = 0; i < dots.length; i++) {
+      for (let j = i + 1; j < dots.length; j++) {
+        const dx = dots[i].x - dots[j].x;
+        const dy = dots[i].y - dots[j].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 110) {
+          ctx.beginPath();
+          ctx.moveTo(dots[i].x, dots[i].y);
+          ctx.lineTo(dots[j].x, dots[j].y);
+          ctx.strokeStyle = dots[i].color;
+          ctx.globalAlpha = (1 - dist / 110) * 0.12;
+          ctx.stroke();
+          ctx.globalAlpha = 1;
+        }
+      }
+    }
+
+    requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize', resize);
+  resize();
+  draw();
+})();
+</script>
+
+</body>
+</html>

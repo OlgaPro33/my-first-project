@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MindFlow — умный планировщик жизни</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-from: #0a0a1a;
+      --bg-to: #1a0a2e;
+      --accent1: #a855f7;
+      --accent2: #ec4899;
+      --accent3: #06b6d4;
+      --card-bg: rgba(255,255,255,0.04);
+      --card-border: rgba(168,85,247,0.25);
+      --text: #e2d9f3;
+      --muted: #9d8ec4;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, var(--bg-from) 0%, var(--bg-to) 100%);
+      min-height: 100vh;
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    /* ── Background particles ── */
+    .bg-orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.18;
+      pointer-events: none;
+      animation: drift 12s ease-in-out infinite alternate;
+    }
+    .bg-orb:nth-child(1) { width: 500px; height: 500px; background: var(--accent1); top: -150px; left: -150px; animation-delay: 0s; }
+    .bg-orb:nth-child(2) { width: 400px; height: 400px; background: var(--accent2); bottom: -100px; right: -100px; animation-delay: -4s; }
+    .bg-orb:nth-child(3) { width: 300px; height: 300px; background: var(--accent3); top: 40%; left: 55%; animation-delay: -8s; }
+
+    @keyframes drift {
+      from { transform: translate(0, 0) scale(1); }
+      to   { transform: translate(30px, 20px) scale(1.08); }
+    }
+
+    /* ── Layout ── */
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      text-align: center;
+      padding: 100px 0 60px;
+      position: relative;
+    }
+
+    .badge {
+      display: inline-block;
+      background: rgba(168,85,247,0.15);
+      border: 1px solid rgba(168,85,247,0.4);
+      color: #c084fc;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 6px 18px;
+      border-radius: 999px;
+      margin-bottom: 28px;
+    }
+
+    h1 {
+      font-size: clamp(2rem, 6vw, 3.8rem);
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 24px;
+      background: linear-gradient(135deg, #c084fc 0%, #f472b6 50%, #67e8f9 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-desc {
+      font-size: clamp(1rem, 2.5vw, 1.2rem);
+      color: var(--muted);
+      max-width: 600px;
+      margin: 0 auto 48px;
+      line-height: 1.7;
+    }
+
+    /* ── CTA Button ── */
+    .cta-wrap { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+
+    .btn-cta {
+      display: inline-block;
+      padding: 18px 48px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #fff;
+      text-decoration: none;
+      background: linear-gradient(135deg, #a855f7, #ec4899);
+      border-radius: 999px;
+      box-shadow: 0 0 30px rgba(168,85,247,0.5), 0 0 60px rgba(236,72,153,0.3);
+      animation: pulse 2.4s ease-in-out infinite;
+      transition: transform 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-cta:hover {
+      transform: scale(1.06);
+      box-shadow: 0 0 50px rgba(168,85,247,0.7), 0 0 90px rgba(236,72,153,0.4);
+      animation: none;
+    }
+
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 30px rgba(168,85,247,0.5), 0 0 60px rgba(236,72,153,0.3); transform: scale(1); }
+      50%       { box-shadow: 0 0 50px rgba(168,85,247,0.75), 0 0 90px rgba(236,72,153,0.5); transform: scale(1.03); }
+    }
+
+    .link-sub {
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+    .link-sub a {
+      color: #c084fc;
+      text-decoration: none;
+      border-bottom: 1px dashed rgba(192,132,252,0.5);
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .link-sub a:hover { color: #f0abfc; border-color: #f0abfc; }
+
+    /* ── Section title ── */
+    .section { padding: 70px 0; }
+
+    .section-title {
+      text-align: center;
+      font-size: clamp(1.5rem, 4vw, 2.2rem);
+      font-weight: 700;
+      margin-bottom: 12px;
+      background: linear-gradient(90deg, #e879f9, #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .section-sub {
+      text-align: center;
+      color: var(--muted);
+      font-size: 1rem;
+      margin-bottom: 48px;
+    }
+
+    /* ── Cards ── */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 32px 24px;
+      backdrop-filter: blur(12px);
+      transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+    }
+    .card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 40px rgba(168,85,247,0.2);
+      border-color: rgba(168,85,247,0.55);
+    }
+
+    .card-icon {
+      width: 52px; height: 52px;
+      margin-bottom: 20px;
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .card-icon.violet { background: rgba(168,85,247,0.15); }
+    .card-icon.pink   { background: rgba(236,72,153,0.15); }
+    .card-icon.cyan   { background: rgba(6,182,212,0.15); }
+
+    .card h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #f3eaff;
+      margin-bottom: 10px;
+    }
+    .card p {
+      font-size: 0.93rem;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    /* ── For whom ── */
+    .for-whom {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 48px 40px;
+      backdrop-filter: blur(12px);
+    }
+    .for-whom h2 {
+      font-size: clamp(1.3rem, 3.5vw, 1.9rem);
+      font-weight: 700;
+      color: #f3eaff;
+      margin-bottom: 20px;
+    }
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+    .tag {
+      background: rgba(168,85,247,0.15);
+      border: 1px solid rgba(168,85,247,0.3);
+      color: #c084fc;
+      font-size: 0.88rem;
+      font-weight: 600;
+      padding: 7px 16px;
+      border-radius: 999px;
+    }
+    .for-whom p {
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.75;
+    }
+    .for-whom strong { color: #e2d9f3; }
+
+    /* ── Bottom CTA ── */
+    .bottom-cta {
+      text-align: center;
+      padding: 80px 0 100px;
+    }
+    .bottom-cta h2 {
+      font-size: clamp(1.4rem, 4vw, 2.2rem);
+      font-weight: 800;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, #c084fc, #f472b6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .bottom-cta p {
+      color: var(--muted);
+      margin-bottom: 36px;
+      font-size: 1rem;
+    }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 24px;
+      border-top: 1px solid rgba(168,85,247,0.12);
+      color: rgba(157,142,196,0.5);
+      font-size: 0.82rem;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 600px) {
+      .hero { padding: 70px 0 40px; }
+      .for-whom { padding: 32px 24px; }
+      .cards { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background orbs -->
+  <div class="bg-orb"></div>
+  <div class="bg-orb"></div>
+  <div class="bg-orb"></div>
+
+  <!-- ═══ HERO ═══ -->
+  <section class="hero">
+    <div class="container">
+      <div class="badge">Психологическая поддержка онлайн</div>
+
+      <h1>MindFlow&nbsp;— умный путь<br>к себе и своей жизни</h1>
+
+      <p class="hero-desc">
+        Авторский метод работы с мышлением и эмоциями, который помогает выйти из тупика,
+        обрести ясность и начать действовать — уже на первой сессии.
+      </p>
+
+      <div class="cta-wrap">
+        <a href="https://t.me/OlgaProkofeva_psy" target="_blank" rel="noopener" class="btn-cta">
+          Записаться на консультацию →
+        </a>
+        <span class="link-sub">
+          Или напишите напрямую:&nbsp;
+          <a href="https://t.me/OlgaProkofeva_psy" target="_blank" rel="noopener">@OlgaProkofeva_psy</a>
+        </span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ ADVANTAGES ═══ -->
+  <section class="section">
+    <div class="container">
+      <h2 class="section-title">Почему это работает</h2>
+      <p class="section-sub">Три ключевых преимущества, которые меняют жизнь</p>
+
+      <div class="cards">
+
+        <!-- Card 1 -->
+        <div class="card">
+          <div class="card-icon violet">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="12" cy="8" r="4" stroke="#a855f7" stroke-width="2"/>
+              <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="#a855f7" stroke-width="2" stroke-linecap="round"/>
+              <path d="M17 11l1.5 1.5L21 10" stroke="#a855f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h3>Индивидуальный подход</h3>
+          <p>Никаких шаблонных советов. Каждая сессия строится вокруг вашего уникального запроса, темпа и ресурсов. Вы чувствуете себя услышанным.</p>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="card">
+          <div class="card-icon pink">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 3l2.5 6H21l-5.5 4 2 6.5L12 16l-5.5 3.5 2-6.5L3 9h6.5L12 3z" stroke="#ec4899" stroke-width="2" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h3>Результат с первой встречи</h3>
+          <p>Вы уходите с конкретным инсайтом и шагом к изменениям, а не просто «поговорили». Методы работают быстро и бережно.</p>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="card">
+          <div class="card-icon cyan">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 22s8-5 8-11a8 8 0 1 0-16 0c0 6 8 11 8 11z" stroke="#06b6d4" stroke-width="2"/>
+              <path d="M9 12l2 2 4-4" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h3>Безопасное пространство</h3>
+          <p>Полная конфиденциальность, без осуждения. Здесь можно говорить о самом сложном — и почувствовать опору вместо стыда.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ FOR WHOM ═══ -->
+  <section class="section" style="padding-top: 0;">
+    <div class="container">
+      <div class="for-whom">
+        <h2>Кому подойдёт?</h2>
+        <div class="tags">
+          <span class="tag">Усталость и выгорание</span>
+          <span class="tag">Тревога и стресс</span>
+          <span class="tag">Кризис отношений</span>
+          <span class="tag">Неуверенность в себе</span>
+          <span class="tag">Поиск смысла и пути</span>
+          <span class="tag">Трудное решение</span>
+        </div>
+        <p>
+          Это пространство для тех, кто чувствует, что <strong>застрял</strong> — в отношениях, карьере или внутри себя.
+          Если вы давно откладываете разговор с собой или устали справляться в одиночку,
+          <strong>MindFlow помогает найти ясность без осуждения и давления</strong>.
+          Работа ведётся онлайн — вы можете находиться в любой точке мира и записаться уже сегодня.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ BOTTOM CTA ═══ -->
+  <section class="bottom-cta">
+    <div class="container">
+      <h2>Готовы сделать первый шаг?</h2>
+      <p>Напишите — и мы обсудим ваш запрос бесплатно в первом сообщении.</p>
+      <div class="cta-wrap">
+        <a href="https://t.me/OlgaProkofeva_psy" target="_blank" rel="noopener" class="btn-cta">
+          Написать в Telegram →
+        </a>
+        <span class="link-sub">
+          <a href="https://t.me/OlgaProkofeva_psy" target="_blank" rel="noopener">https://t.me/OlgaProkofeva_psy</a>
+        </span>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    © 2026 MindFlow · Психологическое консультирование онлайн
+  </footer>
+
+</body>
+</html>
